@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.uama.microservices.provider.ruleengine.dao.iot.IotRuleChainMapper">
+	<resultMap id="BaseResultMap" type="com.uama.microservices.provider.ruleengine.model.iot.IotRuleChain">
+		<!--
+		  WARNING - @mbg.generated
+		-->
+		<id column="id" jdbcType="VARCHAR" property="id"/>
+		<result column="chain_name" jdbcType="VARCHAR" property="chainName"/>
+		<result column="first_node_id" jdbcType="VARCHAR" property="firstNodeId"/>
+		<result column="root" jdbcType="TINYINT" property="root"/>
+		<result column="belong_to_id" jdbcType="VARCHAR" property="belongToId"/>
+		<result column="belong_type" jdbcType="CHAR" property="belongType"/>
+		<result column="tenant_id" jdbcType="VARCHAR" property="tenantId"/>
+		<result column="intime" jdbcType="TIMESTAMP" property="intime"/>
+		<result column="inuser" jdbcType="VARCHAR" property="inuser"/>
+		<result column="update_time" jdbcType="TIMESTAMP" property="updateTime"/>
+		<result column="update_user" jdbcType="VARCHAR" property="updateUser"/>
+	</resultMap>
+
+	<select id="getRuleChainsForActorSystem"  resultType="com.uama.microservices.api.ruleengine.model.vo.rulechain.MIotRuleEngineRuleChainInitV" >
+		/*FORCE_MASTER*/
+		SELECT
+		irc.id AS id,
+		irc.first_node_id AS firstNodeId,
+		irn.node_type AS firstNodeType,
+		irc.root AS root,
+		irc.belong_to_id AS belongToId
+		FROM
+		iot_rule_chain irc
+		LEFT JOIN iot_rule_node irn ON irc.first_node_id = irn.id
+		WHERE
+		1 = 1
+		<if test="ruleChainIdList != null and ruleChainIdList.size > 0">
+			AND irc.id IN (
+			<foreach collection="ruleChainIdList" separator="," item="ruleChainId">
+				#{ruleChainId}
+			</foreach>
+			)
+		</if>
+		<if test="belongType != null and belongType != ''">
+			AND irc.belong_type = #{belongType}
+		</if>
+		ORDER BY
+		irc.root DESC
+	</select>
+</mapper>

@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.uama.microservices.provider.ruleengine.dao.iot.IotRuleRelationMapper">
+	<resultMap id="BaseResultMap" type="com.uama.microservices.provider.ruleengine.model.iot.IotRuleRelation">
+		<!--
+		  WARNING - @mbg.generated
+		-->
+		<id column="id" jdbcType="INTEGER" property="id"/>
+		<result column="from_id" jdbcType="VARCHAR" property="fromId"/>
+		<result column="from_type" jdbcType="CHAR" property="fromType"/>
+		<result column="to_id" jdbcType="VARCHAR" property="toId"/>
+		<result column="to_type" jdbcType="CHAR" property="toType"/>
+		<result column="relation_type" jdbcType="VARCHAR" property="relationType"/>
+		<result column="intime" jdbcType="TIMESTAMP" property="intime"/>
+		<result column="inuser" jdbcType="VARCHAR" property="inuser"/>
+		<result column="update_time" jdbcType="TIMESTAMP" property="updateTime"/>
+		<result column="update_user" jdbcType="VARCHAR" property="updateUser"/>
+	</resultMap>
+
+	<select id="getRuleRelationsForActorSystem" resultType="com.uama.microservices.api.ruleengine.model.vo.rulerelation.MIotRuleEngineRuleRelationInitV">
+		/*FORCE_MASTER*/
+		SELECT
+		irr.id AS id,
+		irr.from_id AS fromId,
+		irnFrom.node_type AS fromNodeType,
+		irr.from_type AS fromType,
+		irr.to_id AS toId,
+		irnTo.node_type AS toNodeType,
+		irr.to_type AS toType,
+		irr.relation_type AS relationType,
+		CASE WHEN irr.from_type = 'RULE_NODE' THEN irnFrom.rule_chain_id WHEN irr.to_type = 'RULE_NODE' THEN irnTo.rule_chain_id ELSE '' END AS ruleChainId
+		FROM
+		iot_rule_relation irr
+		LEFT JOIN iot_rule_node irnFrom ON irr.from_id = irnFrom.id
+		LEFT JOIN iot_rule_node irnTo ON irr.to_id = irnTo.id
+		WHERE
+		1 = 1
+		<if test="ruleChainIdList != null and ruleChainIdList.size > 0">
+			AND (
+				irnFrom.rule_chain_id IN (
+				<foreach collection="ruleChainIdList" separator="," item="ruleChainId">
+					#{ruleChainId}
+				</foreach>
+				) OR irnTo.rule_chain_id IN (
+				<foreach collection="ruleChainIdList" separator="," item="ruleChainId">
+					#{ruleChainId}
+				</foreach>
+				)
+			)
+		</if>
+	</select>
+</mapper>
